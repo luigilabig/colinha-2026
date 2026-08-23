@@ -1,0 +1,36 @@
+# .github/workflows/tse.yml
+# Baixa os candidatos do TSE e salva em public/data/ — todo dia, sozinho.
+
+name: Atualizar dados do TSE
+
+on:
+  workflow_dispatch:          # botão "Run workflow" no site do GitHub
+  schedule:
+    - cron: "0 9 * * *"       # 06:00 de Brasília, diariamente
+
+permissions:
+  contents: write
+
+jobs:
+  etl:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - run: npm install undici adm-zip csv-parse
+
+      - run: node tse-etl.js
+
+      - name: Salvar no repositório
+        run: |
+          git config user.name  "colinha-bot"
+          git config user.email "actions@github.com"
+          git add public/data
+          git diff --staged --quiet && echo "nada mudou" && exit 0
+          git commit -m "dados TSE $(date -u +%Y-%m-%d)"
+          git push
+
