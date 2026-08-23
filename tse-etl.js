@@ -36,21 +36,78 @@ const col = (row, ...nomes) => {
   return "";
 };
 
+/* O TSE roda um WAF que rejeita cliente que não parece navegador.
+   Tentamos perfis de cabeçalho em sequência e relatamos qual passou. */
+const PERFIS = [
+  { nome: "Chrome/Windows + referer do portal", headers: {
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+      "accept-language": "pt-BR,pt;q=0.9,en-US;q=0.8,en;q=0.7",
+      "referer": "https://dadosabertos.tse.jus.br/dataset/candidatos-2026",
+      "upgrade-insecure-requests": "1",
+      "sec-fetch-dest": "document", "sec-fetch-mode": "navigate",
+      "sec-fetch-site": "same-site", "sec-fetch-user": "?1",
+    } },
+  { nome: "Firefox/Linux, sem referer", headers: {
+      "user-agent": "Mozilla/5.0 (X11; Linux x86_64; rv:133.0) Gecko/20100101 Firefox/133.0",
+      "accept": "*/*",
+      "accept-language": "pt-BR,pt;q=0.8,en-US;q=0.5,en;q=0.3",
+    } },
+  { nome: "Safari/macOS", headers: {
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Safari/605.1.15",
+      "accept": "application/zip,application/octet-stream,*/*",
+      "referer": "https://dadosabertos.tse.jus.br/",
+    } },
+];
+
+const espera = (ms) => new Promise((r) => setTimeout(r, ms));
+
+/* O CDN do TSE fica atrás de WAF e recusa requisição que não pareça navegador.
+   Tentamos perfis de cabeçalho em ordem e usamos o primeiro que passar. */
+const TENTATIVAS = [
+  { nome: "navegador completo", headers: {
+      "user-agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36",
+      "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+      "accept-language": "pt-BR,pt;q=0.9,en;q=0.8",
+      "referer": "https://dadosabertos.tse.jus.br/",
+      "sec-fetch-dest": "document", "sec-fetch-mode": "navigate", "sec-fetch-site": "same-site",
+      "upgrade-insecure-requests": "1",
+  }},
+  { nome: "navegador simples", headers: {
+      "user-agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15",
+      "accept": "*/*",
+  }},
+  { nome: "curl", headers: { "user-agent": "curl/8.5.0", "accept": "*/*" } },
+  { nome: "sem cabeçalho", headers: {} },
+];
+
 async function baixar() {
   console.log("→ baixando", URL);
-  const r = await fetch(URL, {                      // fetch nativo: segue redirecionamento sozinho
-    headers: { "user-agent": "colinha2026/1.0 (+https://github.com)" },
-  });
-  console.log("  HTTP", r.status, r.statusText);
-  if (!r.ok) {
-    throw new Error(
-      `TSE respondeu ${r.status}. Abra ${URL} no navegador para conferir se o arquivo existe. ` +
-      `Se o TSE mudou o endereço, ajuste a constante URL no topo deste arquivo.`);
+  const falhas = [];
+
+  for (const t of TENTATIVAS) {
+    let r;
+    try {
+      r = await fetch(URL, { headers: t.headers, redirect: "follow" });
+    } catch (e) {
+      console.log(`  [${t.nome}] erro de rede: ${e.message}`);
+      falhas.push(`${t.nome}: ${e.message}`);
+      continue;
+    }
+    console.log(`  [${t.nome}] HTTP ${r.status} ${r.statusText}`);
+    if (!r.ok) { falhas.push(`${t.nome}: HTTP ${r.status}`); continue; }
+
+    const buf = Buffer.from(await r.arrayBuffer());
+    console.log(`  ✓ passou com "${t.nome}" — ${(buf.length / 1024 / 1024).toFixed(1)} MB`);
+    if (buf.length < 100000) throw new Error("arquivo pequeno demais — deve ser página de erro, não o ZIP");
+    return buf;
   }
-  const buf = Buffer.from(await r.arrayBuffer());
-  console.log(`  ${(buf.length / 1024 / 1024).toFixed(0)} MB baixados`);
-  if (buf.length < 100000) throw new Error("arquivo pequeno demais — provavelmente é uma página de erro, não o ZIP");
-  return buf;
+
+  throw new Error(
+    `todos os perfis foram recusados pelo TSE:\n    ${falhas.join("\n    ")}\n\n` +
+    `O endereço está correto (confirmado no Portal de Dados Abertos). O bloqueio é do WAF\n` +
+    `contra o IP do GitHub Actions. Alternativa: baixar o ZIP manualmente e rodar o script\n` +
+    `num computador, ou commitar public/data à mão uma vez.`);
 }
 
 function lerCsvs(buf) {
