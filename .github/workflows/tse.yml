@@ -21,7 +21,7 @@ jobs:
         with:
           node-version: "24"
 
-      - run: npm install --no-save undici adm-zip csv-parse
+      - run: npm install --no-save adm-zip csv-parse
 
       - run: node tse-etl.js
 
