@@ -117,7 +117,7 @@ function lerCsvs(buf) {
   const dentro = zip.getEntries().map((e) => e.entryName);
   const csvs = zip.getEntries().filter((e) => /\.csv$/i.test(e.entryName));
   if (!csvs.length) throw new Error("nenhum CSV no ZIP. Conteúdo: " + dentro.slice(0, 10).join(", "));
-  console.log(`→ ${csvs.length} CSVs no pacote`);
+  console.log(`→ ${csvs.length} CSVs no pacote:`, csvs.map((e) => e.entryName).join(", "));
 
   const linhas = [];
   let logou = false;
@@ -154,6 +154,7 @@ function normalizar(row) {
 
   const fed = col(row, "NM_FEDERACAO");
   return {
+    id: col(row, "SQ_CANDIDATO"),
     uf: col(row, "SG_UF"),
     cargo,
     numero: col(row, "NR_CANDIDATO"),
@@ -166,6 +167,16 @@ function normalizar(row) {
 }
 
 /* Senado elege DUAS vagas em 2026: guarda os dois melhores números por sigla. */
+/** O mesmo candidato pode vir em mais de um CSV do pacote. Sem isso, os dois
+ *  senadores de uma sigla acabam sendo a mesma pessoa repetida. */
+function semDuplicatas(cands) {
+  const vistos = new Map();
+  for (const c of cands) if (c.id && !vistos.has(c.id)) vistos.set(c.id, c);
+  const n = cands.length - vistos.size;
+  if (n > 0) console.log(`→ ${n} linhas duplicadas removidas`);
+  return [...vistos.values()];
+}
+
 function representantes(cands) {
   const pilhas = new Map();
   for (const c of cands) {
@@ -177,7 +188,10 @@ function representantes(cands) {
   for (const [k, lista] of pilhas) {
     lista.sort((a, b) => score(b.numero, b.numeroPartido) - score(a.numero, a.numeroPartido));
     const quantos = k.includes("|senador|") ? 2 : 1;
-    lista.slice(0, quantos).forEach((c, i) => {
+    /* trava extra: nunca repetir o mesmo número em dois votos */
+    const unicos = [];
+    for (const c of lista) if (!unicos.some((u) => u.numero === c.numero)) unicos.push(c);
+    unicos.slice(0, quantos).forEach((c, i) => {
       out.push({ ...c, cargo: c.cargo === "senador" ? `senador${i + 1}` : c.cargo });
     });
   }
@@ -211,7 +225,17 @@ try {
   if (!cands.length) throw new Error("nenhuma candidatura passou — veja as situações listadas acima e ajuste a regex FORA");
   console.log(`→ ${cands.length} candidaturas válidas`);
 
-  const indice = indexar(representantes(cands));
+  const indice = indexar(representantes(semDuplicatas(cands)));
+
+  /* conferência: nenhum estado pode ter os dois votos de senador iguais */
+  let repetidos = 0;
+  for (const [uf, siglas] of Object.entries(indice))
+    for (const [sg, cg] of Object.entries(siglas))
+      if (cg.senador1 && cg.senador2 && cg.senador1.numero === cg.senador2.numero) {
+        console.log(`  ! ${uf}/${sg}: senador repetido (${cg.senador1.numero})`);
+        repetidos++;
+      }
+  console.log(repetidos ? `→ ${repetidos} repetições sobrando` : "→ nenhum senador repetido");
   fs.mkdirSync(SAIDA, { recursive: true });
   for (const [uf, dados] of Object.entries(indice))
     fs.writeFileSync(path.join(SAIDA, `${uf}.json`), JSON.stringify(dados));
