@@ -19,9 +19,9 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "24"
 
-      - run: npm install undici adm-zip csv-parse
+      - run: npm install --no-save undici adm-zip csv-parse
 
       - run: node tse-etl.js
 
@@ -33,4 +33,3 @@ jobs:
           git diff --staged --quiet && echo "nada mudou" && exit 0
           git commit -m "dados TSE $(date -u +%Y-%m-%d)"
           git push
-
