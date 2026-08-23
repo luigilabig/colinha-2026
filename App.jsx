@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 
 /* ═══════════════════════════════════════════════════════════
-   COLINHA 2026 — v12 — ligado ao TSE
+   COLINHA 2026 — v13 — avatares PNG com corte de busto no código
    Avatares: CORPO INTEIRO, pose heroica, família de cor por
    quadrante. Mesmo SVG serve de miniatura via recorte de viewBox.
    ═══════════════════════════════════════════════════════════ */
@@ -296,19 +296,44 @@ function Objeto({ col, f }) {
   }[col];
 }
 
-/* ── camada de imagem: usa o render de IA quando existir, senão o SVG ──
-   arquivos esperados: /avatares/{col}{lin}.webp e /avatares/{col}{lin}-busto.webp
-   ver avatares-prompts.md                                              */
+/* ── avatares ────────────────────────────────────────────────────────
+   Um arquivo por casa: /avatares/{coluna}{linha}.png — corpo inteiro.
+   O busto da colinha é recortado aqui no código, não precisa de outro arquivo.
+
+   Se o rosto ficar mal enquadrado, mexa só nestes três números:
+     ZOOM  ↑ aproxima o rosto
+     TOPO  ↑ desce o enquadramento (fração da altura onde o corte começa)
+     RAZAO  altura ÷ largura da imagem (1024x1536 = 1.5)                */
 const BASE_AVATAR = "/avatares";
+const AV_EXT   = "png";
+const AV_ZOOM  = 2.8;
+const AV_TOPO  = 0.03;
+const AV_RAZAO = 1.5;
+
 function Avatar({ c, r, size = 120, crop = false }) {
   const [falhou, setFalhou] = useState(false);
-  const src = `${BASE_AVATAR}/${c}${r}${crop ? "-busto" : ""}.webp`;
-  if (!falhou) return (
-    <img src={src} alt={`Avatar de ${GRID[r-1][c-1]}`} onError={() => setFalhou(true)}
-      width={size} height={crop ? size : Math.round(size * 1.5)}
-      style={{ objectFit:"contain", display:"block", borderRadius: crop ? 8 : 0 }} />
+  const src = `${BASE_AVATAR}/${c}${r}.${AV_EXT}`;
+  const rotulo = `Avatar de ${GRID[r-1][c-1]}`;
+
+  if (falhou) return <AvatarSVG c={c} r={r} size={size} crop={crop} />;
+
+  if (!crop) return (
+    <img src={src} alt={rotulo} onError={() => setFalhou(true)}
+      width={size} height={Math.round(size * AV_RAZAO)}
+      style={{ objectFit:"contain", display:"block" }} />
   );
-  return <AvatarSVG c={c} r={r} size={size} crop={crop} />;
+
+  /* miniatura da colinha: mesma imagem, recortada na cabeça por CSS */
+  const larg = size * AV_ZOOM;
+  return (
+    <div style={{ width:size, height:size, overflow:"hidden", borderRadius:8,
+                  background:"var(--urna-fraca)" }}>
+      <img src={src} alt={rotulo} onError={() => setFalhou(true)}
+        style={{ width:larg, display:"block",
+                 marginLeft: -(larg - size) / 2,
+                 marginTop: -larg * AV_RAZAO * AV_TOPO }} />
+    </div>
+  );
 }
 
 function AvatarSVG({ c, r, size = 120, crop = false }) {
