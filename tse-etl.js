@@ -19,7 +19,9 @@ const SAIDA = path.join(RAIZ, "public", "data");
 const URL = `https://cdn.tse.jus.br/estatistica/sead/odsele/consulta_cand/consulta_cand_${ANO}.zip`;
 
 const CARGOS = { 1:"presidente", 3:"governador", 5:"senador", 6:"depFederal", 7:"depEstadual", 8:"depDistrital" };
-const APTOS = ["APTO", "DEFERIDO", "DEFERIDO COM RECURSO"];
+/* Em agosto quase nada foi julgado ainda: a maioria fica "AGUARDANDO JULGAMENTO".
+   Por isso recusamos só quem está claramente fora, em vez de exigir uma lista de aptos. */
+const FORA = /INDEFERID|INAPT|RENUNCI|RENÚNCI|CASSAD|FALECID|CANCELAD|IMPUGNAD|NAO CONHECIMENTO|NÃO CONHECIMENTO/i;
 
 /* melhor número: mais zeros à direita > dígitos repetidos > sufixo menor */
 function score(numero, numeroPartido) {
@@ -133,14 +135,22 @@ function lerCsvs(buf) {
   return linhas;
 }
 
+/* diagnóstico: quantas linhas por situação, para nunca mais filtrar no escuro */
+function situacoes(rows) {
+  const c = {};
+  for (const r of rows) {
+    const v = col(r, "DS_SITUACAO_CANDIDATURA") || "(vazio)";
+    c[v] = (c[v] || 0) + 1;
+  }
+  return Object.entries(c).sort((a, b) => b[1] - a[1]);
+}
+
 function normalizar(row) {
+  /* vice e suplente têm código de cargo próprio (2, 4, 10, 11) e já ficam de fora daqui */
   const cargo = CARGOS[Number(col(row, "CD_CARGO"))];
   if (!cargo) return null;
 
-  const sit = String(col(row, "DS_SITUACAO_CANDIDATURA", "DS_SIT_TOT_TURNO")).toUpperCase();
-  if (!APTOS.includes(sit)) return null;
-  if (/INDEFERID|RENÚNCIA|RENUNCIA|CASSA|FALECID/i.test(col(row, "DS_DETALHE_SITUACAO_CAND"))) return null;
-  if (Number(col(row, "CD_SITUACAO_CANDIDATO_SUPERIOR")) === -1) return null;   // vice / suplente
+  if (FORA.test(col(row, "DS_SITUACAO_CANDIDATURA"))) return null;
 
   const fed = col(row, "NM_FEDERACAO");
   return {
@@ -151,7 +161,7 @@ function normalizar(row) {
     nome: col(row, "NM_URNA_CANDIDATO") || col(row, "NM_CANDIDATO"),
     partido: col(row, "SG_PARTIDO"),
     federacao: fed && fed !== "#NULO#" ? fed : null,
-    foto: `https://divulgacandcontas.tse.jus.br/divulga/rest/arquivo/img/${col(row, "SQ_ELEICAO")}/${col(row, "SQ_CANDIDATO")}`,
+    foto: `https://divulgacandcontas.tse.jus.br/divulga/rest/arquivo/img/${col(row, "CD_ELEICAO")}/${col(row, "SQ_CANDIDATO")}`,
   };
 }
 
@@ -194,9 +204,12 @@ try {
   const brutos = lerCsvs(await baixar());
   console.log(`→ ${brutos.length} linhas lidas`);
 
+  console.log("→ situações encontradas:");
+  for (const [v, n] of situacoes(brutos)) console.log(`     ${n.toString().padStart(6)}  ${v}`);
+
   const cands = brutos.map(normalizar).filter(Boolean);
-  if (!cands.length) throw new Error("nenhuma candidatura apta — confira a lista de colunas acima");
-  console.log(`→ ${cands.length} candidaturas aptas`);
+  if (!cands.length) throw new Error("nenhuma candidatura passou — veja as situações listadas acima e ajuste a regex FORA");
+  console.log(`→ ${cands.length} candidaturas válidas`);
 
   const indice = indexar(representantes(cands));
   fs.mkdirSync(SAIDA, { recursive: true });
