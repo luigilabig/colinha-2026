@@ -109,7 +109,8 @@ h2.q{font-family:var(--display);font-weight:800;font-size:25px;line-height:1.14;
 .chg:hover{background:var(--urna);color:#fff}
 .verdict{margin-top:30px;text-align:center}
 .palco{background:linear-gradient(180deg,#FFF 0%,var(--papel) 100%);border:1px solid var(--linha);
- border-radius:16px;padding:14px 0 6px;margin-top:8px}
+ border-radius:16px;padding:14px 0 6px;margin-top:8px;
+ display:flex;align-items:center;justify-content:center}
 .verdict h3{font-family:var(--display);font-weight:800;font-size:31px;line-height:1.04;letter-spacing:-.03em;margin:14px 0 8px}
 .coord{font-family:'Azeret Mono',monospace;font-size:10.5px;font-weight:800;color:var(--grafite);letter-spacing:.08em}
 .eixo3{display:inline-block;margin-top:10px;border:1.5px solid var(--tinta);border-radius:20px;
@@ -320,7 +321,7 @@ function Avatar({ c, r, size = 120, crop = false }) {
   if (!crop) return (
     <img src={src} alt={rotulo} onError={() => setFalhou(true)}
       width={size} height={Math.round(size * AV_RAZAO)}
-      style={{ objectFit:"contain", display:"block" }} />
+      style={{ objectFit:"contain", display:"block", margin:"0 auto" }} />
   );
 
   /* miniatura da colinha: mesma imagem, recortada na cabeça por CSS */
@@ -485,26 +486,43 @@ export default function Colinha2026() {
 
   const linhas = useMemo(() => {
     if (!res || !uf) return [];
+
+    /* partidos em ordem de proximidade; o indicado sempre primeiro */
     const perto = [...P]
       .map((p) => ({ ...p, d: Math.hypot(p.c-res.col, p.r-res.row) - p.peso*.045 }))
-      .sort((a,b) => a.d - b.d);
+      .sort((a, b) => a.d - b.d);
+    const ordem = [res.p, ...perto.filter((p) => p.s !== res.p.s)];
+
+    /* o Senado tem duas vagas: a segunda nunca pode repetir a primeira.
+       Se o partido indicado só lançou um nome, a outra vaga vai para o
+       partido seguinte mais próximo na matriz. */
+    const jaUsado = new Set();
+    const buscar = (chaves, unico) => {
+      for (const p of ordem) {
+        const bloco = dados?.[p.s];
+        if (!bloco) continue;
+        for (const k of chaves) {
+          const x = bloco[k];
+          if (!x) continue;
+          const marca = `${x.partido}-${x.numero}`;
+          if (unico && jaUsado.has(marca)) continue;
+          if (unico) jaUsado.add(marca);
+          return { ...x, sub: p.s !== res.p.s };
+        }
+      }
+      return null;
+    };
 
     return CARGOS.map((c) => {
       const chave = uf === "DF" && c.api === "depEstadual" ? "depDistrital" : c.api;
 
-      if (dados) {                                   // ── dados reais do TSE ──
-        if (dados[res.p.s]?.[chave]) {
-          const x = dados[res.p.s][chave];
-          return { cargo:c.k, num:x.numero, nome:x.nome, sigla:x.partido, foto:x.foto, sub:false };
-        }
-        const alt = perto.find((p) => dados[p.s]?.[chave]);
-        if (alt) {
-          const x = dados[alt.s][chave];
-          return { cargo:c.k, num:x.numero, nome:x.nome, sigla:x.partido, foto:x.foto, sub:true };
-        }
+      if (dados) {
+        const senado = c.api.startsWith("senador");
+        const x = buscar(senado ? ["senador1", "senador2"] : [chave], senado);
+        if (x) return { cargo:c.k, num:x.numero, nome:x.nome, sigla:x.partido, foto:x.foto, sub:x.sub };
         return { cargo:c.k, num:"--", nome:"Sem candidato registrado", sigla:"—", sub:true };
       }
-                                                     // ── exemplo, enquanto o TSE não entra ──
+
       const dono = temCargo(res.p, c.k) ? res.p : substituto(res.p, res.col, res.row);
       return { cargo:c.k, num: dono.n + "0".repeat(c.z), nome: nome(uf+dono.s+c.k), sigla: dono.s, sub: dono.s !== res.p.s };
     });
