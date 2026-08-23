@@ -4,12 +4,12 @@
  * Baixa o dataset oficial de candidaturas do TSE e gera um JSON por UF
  * em public/data/. Roda no GitHub Actions, sem PC.
  *
- * Escrito em módulo ES porque o package.json do projeto usa "type": "module".
+ * Módulo ES (o package.json do projeto usa "type": "module").
+ * Usa o fetch nativo do Node — sem undici, que muda de API a cada versão.
  */
 
 import fs from "node:fs";
 import path from "node:path";
-import { request } from "undici";
 import AdmZip from "adm-zip";
 import { parse } from "csv-parse/sync";
 
@@ -38,17 +38,16 @@ const col = (row, ...nomes) => {
 
 async function baixar() {
   console.log("→ baixando", URL);
-  const r = await request(URL, {
-    maxRedirections: 5,
+  const r = await fetch(URL, {                      // fetch nativo: segue redirecionamento sozinho
     headers: { "user-agent": "colinha2026/1.0 (+https://github.com)" },
   });
-  console.log("  HTTP", r.statusCode);
-  if (r.statusCode !== 200) {
+  console.log("  HTTP", r.status, r.statusText);
+  if (!r.ok) {
     throw new Error(
-      `TSE respondeu ${r.statusCode}. Abra ${URL} no navegador para conferir se o arquivo existe. ` +
+      `TSE respondeu ${r.status}. Abra ${URL} no navegador para conferir se o arquivo existe. ` +
       `Se o TSE mudou o endereço, ajuste a constante URL no topo deste arquivo.`);
   }
-  const buf = Buffer.from(await r.body.arrayBuffer());
+  const buf = Buffer.from(await r.arrayBuffer());
   console.log(`  ${(buf.length / 1024 / 1024).toFixed(0)} MB baixados`);
   if (buf.length < 100000) throw new Error("arquivo pequeno demais — provavelmente é uma página de erro, não o ZIP");
   return buf;
