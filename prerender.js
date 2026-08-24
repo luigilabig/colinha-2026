@@ -13,7 +13,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { IDEOLOGIAS } from "./ideologias.js";
+import { IDEOLOGIAS, amazon } from "./ideologias.js";
 
 const DIST = path.join(process.cwd(), "dist");
 const SITE = "https://colinha2026.app.br";
@@ -41,6 +41,12 @@ function pagina(i) {
   <p class="chamada">${esc(i.chamada)}</p>
   <p class="coord">Posição na matriz: linha ${i.l}, coluna ${i.c} · eixo econômico à ${eixoC} · eixo social ${eixoL}</p>
   ${i.p.map((par) => `<p>${esc(par)}</p>`).join("\n  ")}
+  <aside class="livro">
+    <strong>Para ler mais</strong><br />
+    ${esc(i.autor)} — <em>${esc(i.obra)}</em>
+    <a href="${amazon(i.autor, i.obra)}" rel="sponsored nofollow noopener" target="_blank">Ver na Amazon →</a>
+  </aside>
+  <p class="afiliado">Como Associado da Amazon, eu recebo por compras qualificadas.</p>
   <p class="cta"><a href="/">Descubra em 5 cliques se este é o seu perfil e monte sua colinha para as eleições de 2026 →</a></p>
 </article>`.trim();
 
@@ -69,7 +75,11 @@ function pagina(i) {
       `  .tipo-seo nav{font-size:13px;color:#6E6A61}.tipo-seo nav a{color:#1B7A45}\n` +
       `  .tipo-seo .chamada{font-size:19px;color:#1B7A45;margin-bottom:6px}\n` +
       `  .tipo-seo .coord{font-size:13px;color:#6E6A61;margin-bottom:18px}\n` +
-      `  .tipo-seo p{margin-bottom:14px}.tipo-seo .cta a{color:#1B7A45;font-weight:600}</style>\n` +
+      `  .tipo-seo p{margin-bottom:14px}.tipo-seo .cta a{color:#1B7A45;font-weight:600}\n` +
+      `  .livro{background:#fff;border:1px solid #E4E1D9;border-left:3px solid #F5A524;\n` +
+      `  border-radius:10px;padding:13px;margin:20px 0 8px;font-size:14px;display:block}\n` +
+      `  .livro a{display:block;margin-top:8px;font-weight:700;color:#14161A}\n` +
+      `  .afiliado{font-size:11px;color:#9A958C;margin-bottom:18px}</style>\n` +
       `</head>`)
     .replace('<div id="root"></div>', `<div id="root">${corpo}</div>`);
 }

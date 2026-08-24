@@ -1,7 +1,8 @@
 import React, { useState, useMemo, useEffect } from "react";
+import { IDEOLOGIAS, porSlug, porCasa, amazon, TAG_AFILIADO } from "./ideologias.js";
 
 /* ═══════════════════════════════════════════════════════════
-   COLINHA 2026 — v13 — avatares PNG com corte de busto no código
+   COLINHA 2026 — v14 — páginas por ideologia, com rota própria
    Avatares: CORPO INTEIRO, pose heroica, família de cor por
    quadrante. Mesmo SVG serve de miniatura via recorte de viewBox.
    ═══════════════════════════════════════════════════════════ */
@@ -157,7 +158,9 @@ h2.q{font-family:var(--display);font-weight:800;font-size:25px;line-height:1.14;
 .grupo{background:#F1EFEA;border-radius:8px;padding:7px 0;text-align:center;margin-top:26px}
 .grupo b{font-family:var(--display);font-weight:800;font-size:12px;letter-spacing:.16em}
 .gal{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px}
-.gcell{background:#fff;border:1px solid var(--linha);border-radius:10px;padding:6px 4px 8px;text-align:center}
+.gcell{background:#fff;border:1px solid var(--linha);border-radius:10px;padding:6px 4px 8px;
+ text-align:center;width:100%;display:block;transition:.14s}
+.gcell:hover{border-color:var(--tinta);transform:translateY(-2px)}
 .gcell p{font-size:8.5px;line-height:1.2;margin-top:2px;font-weight:700}
 .gcell i{font-family:'Azeret Mono',monospace;font-style:normal;font-size:7.5px;color:var(--grafite)}
 .met h5{font-family:var(--display);font-weight:800;font-size:15px;margin:22px 0 7px;letter-spacing:-.01em}
@@ -166,6 +169,21 @@ h2.q{font-family:var(--display);font-weight:800;font-size:25px;line-height:1.14;
 .met table{width:100%;border-collapse:collapse;margin-top:8px;font-size:11.5px}
 .met td,.met th{border:1px solid var(--linha);padding:5px 7px;text-align:left}
 .met th{background:#fff;font-family:'Azeret Mono',monospace;font-size:9px;letter-spacing:.08em;text-transform:uppercase}
+.tipo h1{font-family:var(--display);font-weight:800;font-size:33px;line-height:1.06;
+ letter-spacing:-.03em;margin:12px 0 8px}
+.tipo .chamada{font-family:'Instrument Serif',Georgia,serif;font-style:italic;
+ font-size:21px;line-height:1.3;color:var(--urna);margin-bottom:16px}
+.tipo p{font-size:15px;line-height:1.62;color:var(--grafite);margin-bottom:13px}
+.tipo .coord{font-family:'Azeret Mono',monospace;font-size:10px;font-weight:800;
+ letter-spacing:.1em;color:var(--grafite);margin-bottom:18px}
+.tipo .livro{background:#fff;border:1.5px solid var(--linha);border-left:3px solid var(--marca);
+ border-radius:10px;padding:13px;margin-top:18px;font-size:13.5px;line-height:1.45}
+.tipo .livro a{display:block;margin-top:8px;font-weight:700;color:var(--tinta)}
+.viz{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px}
+.viz a{border:1.5px solid var(--linha);border-radius:10px;padding:11px 12px;background:#fff;
+ text-decoration:none;color:var(--tinta);font-size:12.5px;line-height:1.3}
+.viz a b{display:block;font-size:9px;font-family:'Azeret Mono',monospace;
+ letter-spacing:.12em;color:var(--grafite);margin-bottom:4px}
 .resp{margin-top:26px;padding-top:12px;border-top:1px solid var(--linha);font-size:10.5px;line-height:1.5;color:#8A857C}
 `;
 
@@ -196,8 +214,7 @@ const TITULOS = [
 ];
 const TITULO = { pre:"Descubra quem mais", grifo:"te representa", sub:"com apenas 5 cliques." };
 const GRUPOS = ["COLETIVISTAS","ORDEIROS","SOLIDÁRIOS","SOBERANOS"];
-const TAG_AFILIADO = "colinha2026-20";
-const amazon = (a, o) => `https://www.amazon.com.br/s?k=${encodeURIComponent(o + " " + a)}&tag=${TAG_AFILIADO}`;
+/* TAG_AFILIADO e amazon() vêm de ideologias.js — fonte única */
 const quad = (c, r) => (c <= 3 ? (r <= 3 ? 0 : 2) : (r <= 3 ? 1 : 3));
 
 /* ═══════════════════════════════════════════════════════════
@@ -470,6 +487,37 @@ export default function Colinha2026() {
   const [valor, setValor] = useState(1);
   const [ok, setOk] = useState("");
   const [dados, setDados] = useState(null);   // JSON do TSE; null = ainda em exemplo
+  const [slug, setSlug] = useState(() => {
+    const m = typeof location !== "undefined" && location.pathname.match(/^\/tipo\/([a-z0-9-]+)/);
+    return m ? m[1] : null;
+  });
+
+  /* rotas reais: /tipo/<slug> e /tipos têm página própria gerada no build */
+  const abrirTipo = (sl) => {
+    setSlug(sl); setMenu(false); setTela("tipo");
+    history.pushState({ sl }, "", `/tipo/${sl}`);
+    scrollTo(0, 0);
+  };
+  useEffect(() => {
+    const volta = () => {
+      const m = location.pathname.match(/^\/tipo\/([a-z0-9-]+)/);
+      if (m) { setSlug(m[1]); setTela("tipo"); }
+      else if (location.pathname.startsWith("/tipos")) { setSlug(null); setTela("galeria"); }
+      else { setSlug(null); setTela("home"); }
+    };
+    addEventListener("popstate", volta);
+    if (slug) setTela("tipo");
+    else if (location.pathname.startsWith("/tipos")) setTela("galeria");
+    return () => removeEventListener("popstate", volta);
+  }, []);
+
+  /* título e descrição acompanham a rota */
+  useEffect(() => {
+    const i = slug && porSlug[slug];
+    document.title = i
+      ? `${i.nome} — o que é, de onde vem e as críticas | Colinha 2026`
+      : "Colinha 2026 — Descubra quem mais te representa";
+  }, [slug, tela]);
 
   useEffect(() => {
     if (!uf) { setDados(null); return; }
@@ -482,7 +530,12 @@ export default function Colinha2026() {
   }, [uf]);
   const PIX = "00020126580014br.gov.bcb.pix0136d54f0e6d-8123-4703-9340-c0c29a838e975204000053039865802BR5918LUIGI N LABIGALINI6009SAO PAULO62070503***6304E5C6";
 
-  const ir = (t) => { setMenu(false); setTela(t); };
+  const ir = (t) => {
+    setMenu(false); setSlug(null); setTela(t);
+    const url = t === "galeria" ? "/tipos" : "/";
+    if (location.pathname !== url) history.pushState({}, "", url);
+    scrollTo(0, 0);
+  };
   const eixo = useMemo(() => {
     let col = null, row = null, ident = null;
     via.forEach(({ id, opt }) => { const o = N[id].o[opt]; if (o.col) col = o.col; if (o.row) row = o.row; if (o.ident) ident = o.ident; });
@@ -615,16 +668,65 @@ export default function Colinha2026() {
                 <div className="gal">
                   {GRID.flatMap((linha, ri) => linha.map((rot, ci) =>
                     quad(ci+1, ri+1) === g ? (
-                      <div className="gcell" key={`${ri}-${ci}`}>
+                      <button className="gcell" key={`${ri}-${ci}`}
+                        onClick={() => abrirTipo(porCasa[`${ci+1}${ri+1}`].slug)}>
                         <Avatar c={ci+1} r={ri+1} size={62}/>
                         <p>{rot}</p><i>{AUTORES[ri][ci][0]}</i>
-                      </div>) : null))}
+                      </button>) : null))}
                 </div>
               </div>
             ))}
             <button className="link" onClick={() => ir("home")}>← Voltar</button>
           </main>
         )}
+
+        {tela === "tipo" && slug && porSlug[slug] && (() => {
+          const i = porSlug[slug];
+          const { autor, obra } = i;
+          const op = porCasa[`${7-i.c}${7-i.l}`];
+          const irmaos = IDEOLOGIAS.filter((x) => x.slug !== i.slug && quad(x.c, x.l) === quad(i.c, i.l)).slice(0, 2);
+          return (
+            <main className="screen tipo" key={slug}>
+              <span className="eyebrow">Tipo {i.c}·{i.l} · {GRUPOS[quad(i.c, i.l)]}</span>
+              <div style={{ display:"flex", justifyContent:"center", margin:"10px 0 4px" }}>
+                <Avatar c={i.c} r={i.l} size={140} />
+              </div>
+              <h1>{i.nome}</h1>
+              <p className="chamada">{i.chamada}</p>
+              <p className="coord">
+                {i.c <= 3 ? "ESQUERDA" : "DIREITA"} {i.c <= 3 ? 4-i.c : i.c-3} ·{" "}
+                {i.l <= 3 ? "IDENTITÁRIO" : "UNIVERSALISTA"} · LINHA {i.l}, COLUNA {i.c}
+              </p>
+              {i.p.map((par, k) => <p key={k}>{par}</p>)}
+
+              <div className="livro">
+                <strong>Para ler mais</strong><br />
+                {autor} — {obra}
+                <a href={amazon(autor, obra)} target="_blank" rel="sponsored nofollow noreferrer">Ver na Amazon →</a>
+              </div>
+              <p className="afiliado">
+                Como Associado da Amazon, eu recebo por compras qualificadas.
+              </p>
+
+              <div className="viz">
+                <a href={`/tipo/${op.slug}`} onClick={(e) => { e.preventDefault(); abrirTipo(op.slug); }}>
+                  <b>O OPOSTO</b>{op.nome}
+                </a>
+                {irmaos.map((x) => (
+                  <a key={x.slug} href={`/tipo/${x.slug}`} onClick={(e) => { e.preventDefault(); abrirTipo(x.slug); }}>
+                    <b>MESMO GRUPO</b>{x.nome}
+                  </a>
+                ))}
+              </div>
+
+              <button className="pix" style={{ marginTop:22, animation:"none" }}
+                onClick={() => { setSlug(null); setTela("home"); history.pushState({}, "", "/"); scrollTo(0,0); }}>
+                Descobrir o meu tipo em 5 cliques
+              </button>
+              <button className="link" onClick={() => ir("galeria")}>← Ver os 36 tipos</button>
+            </main>
+          );
+        })()}
 
         {tela === "metodo" && (
           <main className="screen met">
@@ -760,9 +862,9 @@ export default function Colinha2026() {
               <a href={amazon(res.discorda[0], res.discorda[1])} target="_blank" rel="sponsored nofollow noreferrer">Ver o livro <span>→</span></a>
             </div>
             <p className="afiliado">
-              Links de afiliado da Amazon. Se você comprar, a Colinha recebe uma pequena
-              comissão sem custo extra para você. Isso não influencia o resultado do teste
-              nem a escolha dos autores.
+              Como Associado da Amazon, eu recebo por compras qualificadas. Se você comprar
+              por estes links, a Colinha ganha uma pequena comissão, sem custo extra para
+              você. Isso não influencia o resultado do teste nem a escolha dos autores.
             </p>
 
             {res.vazio && (
