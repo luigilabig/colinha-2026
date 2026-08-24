@@ -28,7 +28,7 @@ const CSS = `
 .burger{margin-left:auto;width:34px;height:34px;display:grid;place-items:center;
  border:1.5px solid var(--linha);border-radius:9px;background:#fff}
 .burger span{display:block;width:16px;height:2px;background:var(--tinta);border-radius:2px;margin:2px 0}
-.menu{position:absolute;top:calc(100% + 8px);right:0;z-index:5;background:#fff;border:1.5px solid var(--tinta);
+.menu{position:fixed;top:58px;right:max(14px, calc(50vw - 206px));z-index:80;background:#fff;border:1.5px solid var(--tinta);
  border-radius:13px;overflow:hidden;min-width:214px;box-shadow:0 18px 40px -14px rgba(20,22,26,.4);
  animation:pop .17s cubic-bezier(.2,.8,.3,1)}
 @keyframes pop{from{opacity:0;transform:translateY(-7px) scale(.97)}to{opacity:1;transform:none}}
@@ -36,7 +36,7 @@ const CSS = `
  font-size:14px;font-weight:600;border-bottom:1px solid var(--linha)}
 .menu button:hover{background:var(--papel)}
 .menu button.cafe{background:var(--urna);color:#fff;border-bottom:none;font-family:var(--display);font-weight:800}
-.scrim{position:fixed;inset:0;z-index:25}
+.scrim{position:fixed;inset:0;z-index:70}
 .bar{height:3px;background:var(--linha);position:sticky;top:47px;z-index:20}
 .bar i{display:block;height:100%;background:var(--urna);transition:width .35s cubic-bezier(.4,0,.2,1)}
 .screen{padding:24px 20px 40px;flex:1;animation:rise .3s cubic-bezier(.2,.7,.3,1)}
@@ -399,6 +399,24 @@ const P = [
 ].map(([s,n,c,r,peso,fed,flex]) => ({ s,n,c,r,peso,fed,flex }));
 const UFS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 
+/* ═══════ CANDIDATOS CONFERIDOS À MÃO ═══════
+   Sobrescrevem o TSE. Servem para partido novo que ainda não entrou direito
+   no dataset. Chave: UF (ou BR, que vale em todo o país) → número do partido. */
+const MANUAL = {
+  BR: {
+    "14": { presidente: { numero:"14", nome:"RENAN SANTOS", partido:"MISSÃO" } },
+  },
+  PR: {
+    "14": {
+      depFederal:  { numero:"1414",  nome:"PEDRO DEYROT",    partido:"MISSÃO" },
+      depEstadual: { numero:"14000", nome:"GUSTAVO CAMILLO", partido:"MISSÃO" },
+      senador1:    { numero:"144",   nome:"KAREN GUERREIRO", partido:"MISSÃO" },
+      governador:  { numero:"14",    nome:"LUIZ FRANÇA",     partido:"MISSÃO" },
+    },
+  },
+};
+const manual = (uf, num) => ({ ...(MANUAL.BR?.[num] || {}), ...(MANUAL[uf]?.[num] || {}) });
+
 /* ═══════ PERGUNTAS ═══════ */
 const N = {
   q1:{ t:"Propriedade", q:"O que fazer com as terras, imóveis, fábricas e empresas do Brasil:", o:[
@@ -499,8 +517,10 @@ export default function Colinha2026() {
     const jaUsado = new Set();
     const buscar = (chaves, unico) => {
       for (const p of ordem) {
-        const bloco = dados?.[p.n];        // casa pelo número do partido, não pela sigla
-        if (!bloco) continue;
+        /* número primeiro; sigla como reserva, caso o JSON ainda seja do formato antigo.
+           Depois entram os dados conferidos à mão, que têm prioridade. */
+        const bloco = { ...(dados?.[p.n] ?? dados?.[p.s] ?? {}), ...manual(uf, p.n) };
+        if (!Object.keys(bloco).length) continue;
         for (const k of chaves) {
           const x = bloco[k];
           if (!x) continue;
@@ -516,7 +536,7 @@ export default function Colinha2026() {
     return CARGOS.map((c) => {
       const chave = uf === "DF" && c.api === "depEstadual" ? "depDistrital" : c.api;
 
-      if (dados) {
+      if (dados || MANUAL[uf]) {
         const senado = c.api.startsWith("senador");
         const x = buscar(senado ? ["senador1", "senador2"] : [chave], senado);
         if (x) return { cargo:c.k, num:x.numero, nome:x.nome, sigla:x.partido, foto:x.foto, sub:x.sub };
@@ -548,16 +568,16 @@ export default function Colinha2026() {
           <button className="burger" onClick={() => setMenu(!menu)} aria-label="Menu" aria-expanded={menu}>
             <div><span/><span/><span/></div>
           </button>
-          {menu && (
-            <nav className="menu">
-              <button onClick={() => { setVia([]); setUf(null); ir("home"); }}>🏠 Página inicial</button>
-              <button onClick={() => ir("galeria")}>🎭 Os 36 tipos</button>
-              <button onClick={() => ir("metodo")}>📐 Metodologia</button>
-              <button className="cafe" onClick={() => { setPixOn(true); ir("cafe"); }}>☕ Pagar um café</button>
-            </nav>
-          )}
         </header>
         {menu && <div className="scrim" onClick={() => setMenu(false)} />}
+        {menu && (
+          <nav className="menu">
+            <button onClick={() => { setVia([]); setUf(null); ir("home"); }}>🏠 Página inicial</button>
+            <button onClick={() => ir("galeria")}>🎭 Os 36 tipos</button>
+            <button onClick={() => ir("metodo")}>📐 Metodologia</button>
+            <button className="cafe" onClick={() => { setPixOn(true); ir("cafe"); }}>☕ Pagar um café</button>
+          </nav>
+        )}
         <div className="bar"><i style={{ width:`${pct}%` }} /></div>
 
         {tela === "home" && (
