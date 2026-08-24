@@ -1,5 +1,5 @@
 {
-  "atualizadoEm": "2026-08-24T00:31:13.175Z",
+  "atualizadoEm": "2026-08-24T09:52:13.383Z",
   "fonte": "https://cdn.tse.jus.br/estatistica/sead/odsele/consulta_cand/consulta_cand_2026.zip",
   "ufs": [
     "AC",
@@ -30,5 +30,5 @@
     "SP",
     "TO"
   ],
-  "candidaturas": 39688
+  "candidaturas": 39712
 }
