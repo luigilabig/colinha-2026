@@ -798,7 +798,7 @@ export default function Colinha2026() {
                 {linhas.some((l) => l.sub) &&
                   <>* {res.p.s.toUpperCase()} SEM CANDIDATO NESTE CARGO EM {uf}. INDICAMOS O MAIS PRÓXIMO.<br/></>}
                 COLINHA2026.COM.BR · METODOLOGIA NO SITE<br/>
-                RESPONSÁVEL: [SEU NOME] · CONTATO@COLINHA2026.COM.BR
+                CONTATO.COLINHA2026@GMAIL.COM
               </div>
             </div>
 
@@ -828,8 +828,7 @@ export default function Colinha2026() {
             </p>
             <p className="resp">
               Colinha 2026 é uma iniciativa independente. Não recebe recursos de partidos,
-              candidatos, campanhas ou comitês. Responsável pelo conteúdo: [seu nome completo]
-              — contato@colinha2026.com.br.
+              candidatos, campanhas ou comitês.               Em caso de dúvidas: contato.colinha2026@gmail.com.
             </p>
           </main>
         )}
@@ -837,3 +836,4 @@ export default function Colinha2026() {
     </div>
   );
 }
+
