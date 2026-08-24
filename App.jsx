@@ -480,7 +480,7 @@ export default function Colinha2026() {
       .catch(() => vivo && setDados(null));
     return () => { vivo = false; };
   }, [uf]);
-  const PIX = "00020126500014BR.GOV.BCB.PIX0128colinha2026@exemplo.com.br5204000053039865802BR5913COLINHA 20266009SAO PAULO62070503***63042F7C";
+  const PIX = "00020126580014br.gov.bcb.pix0136d54f0e6d-8123-4703-9340-c0c29a838e975204000053039865802BR5918LUIGI N LABIGALINI6009SAO PAULO62070503***6304E5C6";
 
   const ir = (t) => { setMenu(false); setTela(t); };
   const eixo = useMemo(() => {
@@ -555,7 +555,7 @@ export default function Colinha2026() {
   };
   const txt = res ? `Colinha 2026 · ${uf}\nMeu perfil: ${res.rotulo}\n\n` +
     linhas.map((l) => `${l.cargo}: ${l.num} — ${l.nome} (${l.sigla})${l.sub?"*":""}`).join("\n") +
-    `\n\nMonte a sua: colinha2026.com.br` : "";
+    `\n\nMonte a sua: colinha2026.app.br` : "";
   const pct = tela === "home" ? 0 : Math.min(100, (via.length/4)*100);
   const VALORES = ["R$ 5","R$ 15","R$ 30"];
 
@@ -797,8 +797,8 @@ export default function Colinha2026() {
               <div className="cfoot">
                 {linhas.some((l) => l.sub) &&
                   <>* {res.p.s.toUpperCase()} SEM CANDIDATO NESTE CARGO EM {uf}. INDICAMOS O MAIS PRÓXIMO.<br/></>}
-                COLINHA2026.COM.BR · METODOLOGIA NO SITE<br/>
-                CONTATO.COLINHA2026@GMAIL.COM
+                COLINHA2026.APP.BR · METODOLOGIA NO SITE<br/>
+                RESPONSÁVEL: LUIGI NUNES LABIGALINI · CONTATO.COLINHA2026@GMAIL.COM
               </div>
             </div>
 
@@ -828,7 +828,8 @@ export default function Colinha2026() {
             </p>
             <p className="resp">
               Colinha 2026 é uma iniciativa independente. Não recebe recursos de partidos,
-              candidatos, campanhas ou comitês.               Em caso de dúvidas: contato.colinha2026@gmail.com.
+              candidatos, campanhas ou comitês. Responsável pelo conteúdo: Luigi Nunes Labigalini
+              — contato.colinha2026@gmail.com.
             </p>
           </main>
         )}
@@ -836,4 +837,3 @@ export default function Colinha2026() {
     </div>
   );
 }
-
