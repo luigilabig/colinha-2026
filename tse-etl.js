@@ -203,7 +203,9 @@ function indexar(reps) {
   const nacional = {};
   for (const c of reps) {
     const alvo = c.cargo === "presidente" ? nacional : (out[c.uf] ??= {});
-    (alvo[c.partido] ??= {})[c.cargo] = {
+    /* indexado pelo NÚMERO do partido: sigla varia de grafia entre fontes
+       ("PC do B" x "PCdoB", "UNIÃO" x "União Brasil", "MISSÃO" x "Missão") */
+    (alvo[String(Number(c.numeroPartido))] ??= {})[c.cargo] = {
       numero: c.numero, nome: c.nome, partido: c.partido,
       federacao: c.federacao, foto: c.foto,
     };
@@ -236,6 +238,12 @@ try {
         repetidos++;
       }
   console.log(repetidos ? `→ ${repetidos} repetições sobrando` : "→ nenhum senador repetido");
+
+  /* quais siglas o TSE devolveu, e com que número — para conferir os casamentos */
+  const siglas = new Map();
+  for (const c of cands) siglas.set(String(Number(c.numeroPartido)), c.partido);
+  console.log("→ partidos no arquivo:",
+    [...siglas.entries()].sort((a,b) => a[0]-b[0]).map(([n,sg]) => `${n}=${sg}`).join("  "));
   fs.mkdirSync(SAIDA, { recursive: true });
   for (const [uf, dados] of Object.entries(indice))
     fs.writeFileSync(path.join(SAIDA, `${uf}.json`), JSON.stringify(dados));
