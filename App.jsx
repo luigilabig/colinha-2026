@@ -747,8 +747,8 @@ export default function Colinha2026() {
             <p>Pelo <strong>melhor número</strong>: o mais redondo dentro do partido indicado.
               Regra mecânica, não julgamento sobre a pessoa.</p>
             <h5>5. Quando falta candidato</h5>
-            <p>Asterisco e o mais próximo na matriz. <strong>Em empate, a régua favorece a
-              direita libertária</strong> — viés intencional, declarado aqui.</p>
+            <p>Identifica com asterisco e indica o mais próximo na matriz. Em caso de
+              empate, favorece liberdade econômica e individual.</p>
             <h5>6. Como a Colinha se sustenta</h5>
             <p>Doações via Pix e comissão de afiliado sobre livros. Não recebemos dinheiro de
               partidos, candidatos ou campanhas, e o resultado não muda em função de quem paga.</p>
