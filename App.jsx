@@ -8,8 +8,8 @@ import { IDEOLOGIAS, porSlug, porCasa, amazon, TAG_AFILIADO } from "./ideologias
    ═══════════════════════════════════════════════════════════ */
 
 const CSS = `
-@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Azeret+Mono:wght@600;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Fraunces:opsz,wght@9..144,700;9..144,900&family=Instrument+Serif:ital@0;1&display=swap');
-/* trocar por 'Fraunces' para a versão serifada dos títulos */
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Azeret+Mono:wght@600;800&family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&family=Instrument+Serif:ital@0;1&display=swap');
+/* fonte de display; trocar aqui muda todos os títulos de uma vez */
 .ap{--display:'Bricolage Grotesque',system-ui,sans-serif;
  --papel:#FBFAF7;--tinta:#14161A;--grafite:#6E6A61;--linha:#E4E1D9;
  --urna:#1B7A45;--urna-luz:#25A25C;--urna-fraca:#EAF4EE;--marca:#F5A524;--alerta:#C2410C;
@@ -338,6 +338,7 @@ function Avatar({ c, r, size = 120, crop = false }) {
   if (!crop) return (
     <img src={src} alt={rotulo} onError={() => setFalhou(true)}
       width={size} height={Math.round(size * AV_RAZAO)}
+      loading="lazy" decoding="async"
       style={{ objectFit:"contain", display:"block", margin:"0 auto" }} />
   );
 
@@ -347,6 +348,7 @@ function Avatar({ c, r, size = 120, crop = false }) {
     <div style={{ width:size, height:size, overflow:"hidden", borderRadius:8,
                   background:"var(--urna-fraca)" }}>
       <img src={src} alt={rotulo} onError={() => setFalhou(true)}
+        loading="lazy" decoding="async"
         style={{ width:larg, display:"block",
                  marginLeft: -(larg - size) / 2,
                  marginTop: -larg * AV_RAZAO * AV_TOPO }} />
@@ -479,7 +481,12 @@ const substituto = (p, col, row) => [...P]
   .sort((a,b) => (Math.hypot(a.c-col,a.r-row) - Math.hypot(b.c-col,b.r-row)) || ((b.c+b.r)-(a.c+a.r)))[0];
 
 export default function Colinha2026() {
-  const [tela, setTela] = useState("home");
+  const [tela, setTela] = useState(() => {
+    if (typeof location === "undefined") return "home";
+    if (/^\/tipo\//.test(location.pathname)) return "tipo";
+    if (location.pathname.startsWith("/tipos")) return "galeria";
+    return "home";
+  });
   const [menu, setMenu] = useState(false);
   const [uf, setUf] = useState(null);
   const [via, setVia] = useState([]);

@@ -69,7 +69,7 @@ function pagina(i) {
       `  <meta property="og:title" content="${esc(i.nome)} — Colinha 2026" />\n` +
       `  <meta property="og:description" content="${esc(desc)}" />\n` +
       `  <meta property="og:url" content="${SITE}/tipo/${i.slug}" />\n` +
-      `  <script type="application/ld+json">${JSON.stringify(dados)}</script>\n` +
+      `  <script type="application/ld+json">${JSON.stringify(dados).replace(/</g, "\\u003c")}</script>\n` +
       `  <style>.tipo-seo{max-width:640px;margin:0 auto;padding:28px 20px;font:16px/1.65 system-ui,sans-serif;color:#14161A}\n` +
       `  .tipo-seo h1{font-size:34px;line-height:1.1;margin:14px 0 8px}\n` +
       `  .tipo-seo nav{font-size:13px;color:#6E6A61}.tipo-seo nav a{color:#1B7A45}\n` +
