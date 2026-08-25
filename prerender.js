@@ -13,7 +13,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { IDEOLOGIAS, amazon } from "./ideologias.js";
+import { IDEOLOGIAS, amazon, MATRIZ_SVG } from "./ideologias.js";
 
 const DIST = path.join(process.cwd(), "dist");
 const SITE = "https://colinha2026.app.br";
@@ -94,6 +94,7 @@ function indice() {
   <nav><a href="/">Colinha 2026</a> › Os 36 tipos</nav>
   <h1>Os 36 tipos políticos</h1>
   <p class="chamada">Cada casa da matriz tem um nome, uma história e um autor de referência.</p>
+  <figure class="matriz">${MATRIZ_SVG}</figure>
   <ul class="lista">
     ${itens}
   </ul>
@@ -109,6 +110,7 @@ function indice() {
       `  .tipo-seo h1{font-size:34px;line-height:1.1;margin:14px 0 8px}\n` +
       `  .tipo-seo nav{font-size:13px;color:#6E6A61}.tipo-seo nav a{color:#1B7A45}\n` +
       `  .tipo-seo .chamada{font-size:19px;color:#1B7A45;margin-bottom:18px}\n` +
+      `  .matriz{margin:18px 0;padding:14px 6px 6px;background:#fff;border:1px solid #E4E1D9;border-radius:14px}\n` +
       `  .lista{list-style:none;padding:0}.lista li{margin-bottom:14px}\n` +
       `  .lista a{color:#14161A;text-decoration:none}.lista span{font-size:14px;color:#6E6A61}\n` +
       `  .tipo-seo .cta a{color:#1B7A45;font-weight:600}</style>\n</head>`)

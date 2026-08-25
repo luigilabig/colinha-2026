@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useEffect } from "react";
-import { IDEOLOGIAS, porSlug, porCasa, amazon, TAG_AFILIADO } from "./ideologias.js";
+import { IDEOLOGIAS, porSlug, porCasa, amazon, TAG_AFILIADO,
+         GRUPOS, MATRIZ_SVG } from "./ideologias.js";
 
 /* ═══════════════════════════════════════════════════════════
    COLINHA 2026 — v14 — páginas por ideologia, com rota própria
@@ -155,6 +156,8 @@ h2.q{font-family:var(--display);font-weight:800;font-size:25px;line-height:1.14;
 .callout{padding:13px;border-radius:10px;margin-top:12px;font-size:12.5px;line-height:1.5}
 .flag{display:inline-block;background:var(--alerta);color:#fff;border-radius:4px;padding:3px 7px;
  font-family:'Azeret Mono',monospace;font-size:8.5px;font-weight:800;letter-spacing:.1em;margin-bottom:9px}
+.matriz{margin:18px 0 4px;background:#fff;border:1px solid var(--linha);
+ border-radius:14px;padding:14px 10px 8px}
 .grupo{background:#F1EFEA;border-radius:8px;padding:7px 0;text-align:center;margin-top:26px}
 .grupo b{font-family:var(--display);font-weight:800;font-size:12px;letter-spacing:.16em}
 .gal{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:12px}
@@ -213,7 +216,6 @@ const TITULOS = [
   ["Ninguém decora o número", "do deputado estadual."],
 ];
 const TITULO = { pre:"Descubra quem mais", grifo:"te representa", sub:"com apenas 5 cliques." };
-const GRUPOS = ["COLETIVISTAS","ORDEIROS","SOLIDÁRIOS","SOBERANOS"];
 /* TAG_AFILIADO e amazon() vêm de ideologias.js — fonte única */
 const quad = (c, r) => (c <= 3 ? (r <= 3 ? 0 : 2) : (r <= 3 ? 1 : 3));
 
@@ -667,8 +669,10 @@ export default function Colinha2026() {
             <span className="eyebrow">Os 36 tipos</span>
             <h2 className="q" style={{ marginTop:8 }}>Qual deles é você?</h2>
             <p className="sub" style={{ fontSize:13.5 }}>
-              Cada quadrante tem sua cor. O rosto vem da linha, o objeto na mão vem da coluna.
+              Dois eixos, quatro quadrantes, 36 casas. Toque em qualquer uma para ler o que
+              a corrente defende, de onde veio e quais são as críticas.
             </p>
+            <div className="matriz" dangerouslySetInnerHTML={{ __html: MATRIZ_SVG }} />
             {[0,1,2,3].map((g) => (
               <div key={g}>
                 <div className="grupo"><b>{GRUPOS[g]}</b></div>
@@ -702,7 +706,7 @@ export default function Colinha2026() {
               <p className="chamada">{i.chamada}</p>
               <p className="coord">
                 {i.c <= 3 ? "ESQUERDA" : "DIREITA"} {i.c <= 3 ? 4-i.c : i.c-3} ·{" "}
-                {i.l <= 3 ? "IDENTITÁRIO" : "UNIVERSALISTA"} · LINHA {i.l}, COLUNA {i.c}
+                {i.l <= 3 ? "AUTORIDADE" : "LIBERDADE"} {i.l <= 3 ? 4-i.l : i.l-3} · {GRUPOS[quad(i.c, i.l)]}
               </p>
               {i.p.map((par, k) => <p key={k}>{par}</p>)}
 
@@ -842,7 +846,7 @@ export default function Colinha2026() {
               <h3>{res.rotulo}</h3>
               <p className="coord">
                 {res.col<=3 ? "ESQUERDA" : "DIREITA"} {res.col<=3 ? 4-res.col : res.col-3} ·{" "}
-                {res.row<=3 ? "AUTORITÁRIO" : "LIBERAL"} {res.row<=3 ? 4-res.row : res.row-3} ·{" "}
+                {res.row<=3 ? "AUTORIDADE" : "LIBERDADE"} {res.row<=3 ? 4-res.row : res.row-3} ·{" "}
                 {GRUPOS[quad(res.col, res.row)]}
               </p>
               {eixo.ident && <div className="eixo3">{eixo.ident}</div>}

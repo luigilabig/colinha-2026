@@ -305,5 +305,50 @@ export const TAG_AFILIADO = "colinha2026-20";
 export const amazon = (autor, obra) =>
   `https://www.amazon.com.br/s?k=${encodeURIComponent(obra + " " + autor)}&tag=${TAG_AFILIADO}`;
 
+
+/* ═══════ QUADRANTES E DIAGRAMA ═══════
+   Fonte única das cores e nomes de grupo. O SVG é constante estática,
+   sem interpolação de dado externo — usado no app e nas páginas geradas. */
+export const GRUPOS     = ["COLETIVISTAS", "ORDEIROS", "SOLIDÁRIOS", "SOBERANOS"];
+export const QUAD_FUNDO = ["#F6C6C0", "#BFD9F2", "#BFE8CD", "#F7DFA8"];
+export const QUAD_TINTA = ["#B3382D", "#1F5C99", "#1E8A4C", "#9C7014"];
+
+export const MATRIZ_SVG = `
+<svg viewBox="0 0 420 452" width="100%" height="auto" role="img"
+     aria-label="Matriz política: economia coletiva ou de mercado no eixo horizontal, autoridade ou liberdade no vertical">
+  <g font-family="'Azeret Mono',ui-monospace,monospace" font-weight="800">
+    <rect x="46"  y="46"  width="164" height="164" fill="${QUAD_FUNDO[0]}"/>
+    <rect x="210" y="46"  width="164" height="164" fill="${QUAD_FUNDO[1]}"/>
+    <rect x="46"  y="210" width="164" height="164" fill="${QUAD_FUNDO[2]}"/>
+    <rect x="210" y="210" width="164" height="164" fill="${QUAD_FUNDO[3]}"/>
+
+    <line x1="210" y1="34" x2="210" y2="386" stroke="#14161A" stroke-width="2.4"/>
+    <line x1="34" y1="210" x2="386" y2="210" stroke="#14161A" stroke-width="2.4"/>
+    <polygon points="210,26 204,40 216,40" fill="#14161A"/>
+    <polygon points="210,394 204,380 216,380" fill="#14161A"/>
+    <polygon points="26,210 40,204 40,216" fill="#14161A"/>
+    <polygon points="394,210 380,204 380,216" fill="#14161A"/>
+
+    <text x="128" y="124" text-anchor="middle" font-size="13" letter-spacing="1" fill="${QUAD_TINTA[0]}">COLETIVISTAS</text>
+    <text x="292" y="124" text-anchor="middle" font-size="13" letter-spacing="1" fill="${QUAD_TINTA[1]}">ORDEIROS</text>
+    <text x="128" y="300" text-anchor="middle" font-size="13" letter-spacing="1" fill="${QUAD_TINTA[2]}">SOLIDÁRIOS</text>
+    <text x="292" y="300" text-anchor="middle" font-size="13" letter-spacing="1" fill="${QUAD_TINTA[3]}">SOBERANOS</text>
+
+    <text x="128" y="142" text-anchor="middle" font-size="9" fill="${QUAD_TINTA[0]}" opacity=".85">linhas 1 a 3 · colunas 1 a 3</text>
+    <text x="292" y="142" text-anchor="middle" font-size="9" fill="${QUAD_TINTA[1]}" opacity=".85">linhas 1 a 3 · colunas 4 a 6</text>
+    <text x="128" y="318" text-anchor="middle" font-size="9" fill="${QUAD_TINTA[2]}" opacity=".85">linhas 4 a 6 · colunas 1 a 3</text>
+    <text x="292" y="318" text-anchor="middle" font-size="9" fill="${QUAD_TINTA[3]}" opacity=".85">linhas 4 a 6 · colunas 4 a 6</text>
+
+    <text x="210" y="16" text-anchor="middle" font-size="14" letter-spacing="2" fill="#14161A">AUTORIDADE</text>
+    <text x="210" y="416" text-anchor="middle" font-size="14" letter-spacing="2" fill="#14161A">LIBERDADE</text>
+    <text x="30"  y="200" font-size="14" letter-spacing="1.4" fill="#14161A">COLETIVO</text>
+    <text x="390" y="200" text-anchor="end" font-size="14" letter-spacing="1.4" fill="#14161A">MERCADO</text>
+
+    <text x="210" y="440" text-anchor="middle" font-size="9.5" font-weight="600" letter-spacing=".4" fill="#6E6A61">
+      em cima, o grupo define o tratamento · embaixo, a mesma regra vale para todos
+    </text>
+  </g>
+</svg>`.trim();
+
 export const porSlug = Object.fromEntries(IDEOLOGIAS.map((i) => [i.slug, i]));
 export const porCasa = Object.fromEntries(IDEOLOGIAS.map((i) => [`${i.c}${i.l}`, i]));
