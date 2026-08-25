@@ -314,7 +314,7 @@ export const QUAD_FUNDO = ["#F6C6C0", "#BFD9F2", "#BFE8CD", "#F7DFA8"];
 export const QUAD_TINTA = ["#B3382D", "#1F5C99", "#1E8A4C", "#9C7014"];
 
 export const MATRIZ_SVG = `
-<svg viewBox="0 0 420 452" width="100%" height="auto" role="img"
+<svg viewBox="0 0 420 430" width="100%" height="auto" role="img"
      aria-label="Matriz política: economia coletiva ou de mercado no eixo horizontal, autoridade ou liberdade no vertical">
   <g font-family="'Azeret Mono',ui-monospace,monospace" font-weight="800">
     <rect x="46"  y="46"  width="164" height="164" fill="${QUAD_FUNDO[0]}"/>
@@ -329,24 +329,25 @@ export const MATRIZ_SVG = `
     <polygon points="26,210 40,204 40,216" fill="#14161A"/>
     <polygon points="394,210 380,204 380,216" fill="#14161A"/>
 
-    <text x="128" y="124" text-anchor="middle" font-size="13" letter-spacing="1" fill="${QUAD_TINTA[0]}">COLETIVISTAS</text>
-    <text x="292" y="124" text-anchor="middle" font-size="13" letter-spacing="1" fill="${QUAD_TINTA[1]}">ORDEIROS</text>
-    <text x="128" y="300" text-anchor="middle" font-size="13" letter-spacing="1" fill="${QUAD_TINTA[2]}">SOLIDÁRIOS</text>
-    <text x="292" y="300" text-anchor="middle" font-size="13" letter-spacing="1" fill="${QUAD_TINTA[3]}">SOBERANOS</text>
+    <text x="128" y="118" text-anchor="middle" font-size="13" letter-spacing="1" fill="${QUAD_TINTA[0]}">COLETIVISTAS</text>
+    <text x="292" y="118" text-anchor="middle" font-size="13" letter-spacing="1" fill="${QUAD_TINTA[1]}">ORDEIROS</text>
+    <text x="128" y="294" text-anchor="middle" font-size="13" letter-spacing="1" fill="${QUAD_TINTA[2]}">SOLIDÁRIOS</text>
+    <text x="292" y="294" text-anchor="middle" font-size="13" letter-spacing="1" fill="${QUAD_TINTA[3]}">SOBERANOS</text>
 
-    <text x="128" y="142" text-anchor="middle" font-size="9" fill="${QUAD_TINTA[0]}" opacity=".85">linhas 1 a 3 · colunas 1 a 3</text>
-    <text x="292" y="142" text-anchor="middle" font-size="9" fill="${QUAD_TINTA[1]}" opacity=".85">linhas 1 a 3 · colunas 4 a 6</text>
-    <text x="128" y="318" text-anchor="middle" font-size="9" fill="${QUAD_TINTA[2]}" opacity=".85">linhas 4 a 6 · colunas 1 a 3</text>
-    <text x="292" y="318" text-anchor="middle" font-size="9" fill="${QUAD_TINTA[3]}" opacity=".85">linhas 4 a 6 · colunas 4 a 6</text>
+    <text x="128" y="138" text-anchor="middle" font-size="9" font-weight="600" fill="${QUAD_TINTA[0]}" opacity=".8">linhas 1 a 3</text>
+    <text x="128" y="150" text-anchor="middle" font-size="9" font-weight="600" fill="${QUAD_TINTA[0]}" opacity=".8">colunas 1 a 3</text>
+    <text x="292" y="138" text-anchor="middle" font-size="9" font-weight="600" fill="${QUAD_TINTA[1]}" opacity=".8">linhas 1 a 3</text>
+    <text x="292" y="150" text-anchor="middle" font-size="9" font-weight="600" fill="${QUAD_TINTA[1]}" opacity=".8">colunas 4 a 6</text>
+    <text x="128" y="314" text-anchor="middle" font-size="9" font-weight="600" fill="${QUAD_TINTA[2]}" opacity=".8">linhas 4 a 6</text>
+    <text x="128" y="326" text-anchor="middle" font-size="9" font-weight="600" fill="${QUAD_TINTA[2]}" opacity=".8">colunas 1 a 3</text>
+    <text x="292" y="314" text-anchor="middle" font-size="9" font-weight="600" fill="${QUAD_TINTA[3]}" opacity=".8">linhas 4 a 6</text>
+    <text x="292" y="326" text-anchor="middle" font-size="9" font-weight="600" fill="${QUAD_TINTA[3]}" opacity=".8">colunas 4 a 6</text>
 
     <text x="210" y="16" text-anchor="middle" font-size="14" letter-spacing="2" fill="#14161A">AUTORIDADE</text>
     <text x="210" y="416" text-anchor="middle" font-size="14" letter-spacing="2" fill="#14161A">LIBERDADE</text>
     <text x="30"  y="200" font-size="14" letter-spacing="1.4" fill="#14161A">COLETIVO</text>
     <text x="390" y="200" text-anchor="end" font-size="14" letter-spacing="1.4" fill="#14161A">MERCADO</text>
 
-    <text x="210" y="440" text-anchor="middle" font-size="9.5" font-weight="600" letter-spacing=".4" fill="#6E6A61">
-      em cima, o grupo define o tratamento · embaixo, a mesma regra vale para todos
-    </text>
   </g>
 </svg>`.trim();
 
