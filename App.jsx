@@ -424,6 +424,8 @@ const UFS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","P
 /* ═══════ INDICAÇÃO POR CASA ═══════
    Tabela definida à mão e publicada na metodologia. Chave: linha+coluna.
    Substitui o cálculo por distância — ver item 5 da metodologia. */
+const PESO_COLUNA = 3;   // economia pesa 3x a autoridade no desempate da fila
+
 const PARES = {
   "11":["PCO","PCB"],        "12":["PCB","PCO"],        "13":["Republicanos","DC"],
   "14":["PRD","PP"],         "15":["PRTB","PP"],        "16":["Missão","PP"],
@@ -499,7 +501,7 @@ const CARGOS = [
 const temCargo = (p, cargo) => !(p.peso <= 3 && cargo === "Senador · 2º voto");
 const substituto = (p, col, row) => [...P]
   .filter((x) => x.s !== p.s && temCargo(x, "Senador · 2º voto"))
-  .sort((a,b) => (Math.hypot(a.c-col,a.r-row) - Math.hypot(b.c-col,b.r-row)) || ((b.c+b.r)-(a.c+a.r)))[0];
+  .sort((a,b) => Math.hypot((a.c-col)*PESO_COLUNA, a.r-row) - Math.hypot((b.c-col)*PESO_COLUNA, b.r-row))[0];
 
 export default function Colinha2026() {
   const [tela, setTela] = useState(() => {
@@ -589,9 +591,11 @@ export default function Colinha2026() {
     /* 1º e 2º vêm da tabela publicada; o resto entra só se faltarem candidatos */
     const par = PARES[`${res.row}${res.col}`] || [];
     const daTabela = par.map((sg) => P.find((p) => p.s === sg)).filter(Boolean);
+    /* fora da tabela, a fila segue a matriz com a economia pesando PESO_COLUNA
+       vezes mais que a autoridade — impede substituto do lado oposto do espectro */
     const resto = [...P]
       .filter((p) => !par.includes(p.s))
-      .map((p) => ({ ...p, d: Math.hypot(p.c-res.col, p.r-res.row) }))
+      .map((p) => ({ ...p, d: Math.hypot((p.c - res.col) * PESO_COLUNA, p.r - res.row) }))
       .sort((a, b) => a.d - b.d);
     const ordem = [...daTabela, ...resto];
 
