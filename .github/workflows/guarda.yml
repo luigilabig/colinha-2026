@@ -1,0 +1,40 @@
+# .github/workflows/guarda.yml
+# Falha o build se a chave Pix ou a tag de afiliado forem alteradas.
+# Não impede um ataque com acesso ao repositório, mas garante que
+# qualquer mudança nessas linhas apareça como erro vermelho e gere e-mail.
+
+name: Guarda Pix e afiliado
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  verificar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Conferir chave Pix
+        run: |
+          ESPERADO="d54f0e6d-8123-4703-9340-c0c29a838e97"
+          grep -q "$ESPERADO" App.jsx || {
+            echo "::error::A chave Pix em App.jsx não é a esperada."; exit 1; }
+          echo "chave Pix intacta"
+
+      - name: Conferir tag de afiliado
+        run: |
+          ESPERADO='TAG_AFILIADO = "colinha2026-20"'
+          grep -qF "$ESPERADO" ideologias.js || {
+            echo "::error::A tag de afiliado em ideologias.js não é a esperada."; exit 1; }
+          echo "tag de afiliado intacta"
+
+      - name: Conferir que não há outro destino de Pix ou tag
+        run: |
+          ! grep -rEn 'BR\.GOV\.BCB\.PIX' --include=*.js --include=*.jsx . \
+            | grep -v "d54f0e6d-8123-4703-9340-c0c29a838e97" \
+            || { echo "::error::Existe um segundo código Pix no repositório."; exit 1; }
+          ! grep -rEn 'tag=[a-z0-9-]+' --include=*.js --include=*.jsx . \
+            | grep -v "colinha2026-20" | grep -v 'TAG_AFILIADO' \
+            || { echo "::error::Existe outra tag de afiliado no repositório."; exit 1; }
+          echo "nenhum destino alternativo encontrado"
