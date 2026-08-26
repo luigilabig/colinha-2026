@@ -475,10 +475,10 @@ const N = {
   q3:{ t:"Direitos", q:"Diante das diferenças entre as pessoas:", o:[
     { t:"Devemos dar direitos de forma diferente, baseado no grupo a que pertencem.", go:"q4a", ident:"IDENTITÁRIO", af:"os direitos devem variar conforme o grupo a que a pessoa pertence." },
     { t:"Todos devem ter direitos iguais.", go:"q4l", ident:"UNIVERSALISTA", af:"todos devem ter os mesmos direitos, sem olhar o grupo." }]},
-  q4a:{ t:"Dissidência", q:"Quem pensa, reza ou vive de um jeito diferente do coletivo:", o:[
-    { t:"É considerado um inimigo e deve ser eliminado.", row:1, af:"quem vive de um jeito diferente do coletivo é um inimigo e deve ser eliminado." },
-    { t:"Deve ser preso para não atrapalhar o coletivo.", row:2, af:"quem destoa do coletivo deve ser preso." },
-    { t:"Deve ser disciplinado para que melhore.", row:3, af:"quem destoa do coletivo deve ser disciplinado até melhorar." }]},
+  q4a:{ t:"Decisão", q:"Quem deve definir os direitos de cada grupo?", o:[
+    { t:"As pessoas no poder.", row:1, af:"as pessoas no poder devem definir os direitos de cada grupo." },
+    { t:"Os representantes escolhidos pela sociedade.", row:2, af:"os representantes escolhidos pela sociedade devem definir os direitos de cada grupo." },
+    { t:"A sociedade.", row:3, af:"a sociedade deve definir os direitos de cada grupo." }]},
   q4l:{ t:"Regras", q:"O que as pessoas podem ou não fazer:", o:[
     { t:"Deve ser definido por uma autoridade legisladora.", row:4, af:"os limites da conduta devem ser definidos por uma autoridade legisladora." },
     { t:"Deve respeitar direitos naturais, independente do que diz a lei.", row:5, af:"existem direitos naturais que valem mesmo contra a lei." },
