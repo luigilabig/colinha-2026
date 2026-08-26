@@ -420,6 +420,25 @@ const P = [
 ].map(([s,n,c,r,peso,fed,flex]) => ({ s,n,c,r,peso,fed,flex }));
 const UFS = ["AC","AL","AP","AM","BA","CE","DF","ES","GO","MA","MT","MS","MG","PA","PB","PR","PE","PI","RJ","RN","RS","RO","RR","SC","SP","SE","TO"];
 
+
+/* ═══════ INDICAÇÃO POR CASA ═══════
+   Tabela definida à mão e publicada na metodologia. Chave: linha+coluna.
+   Substitui o cálculo por distância — ver item 5 da metodologia. */
+const PARES = {
+  "11":["PCO","PCB"],        "12":["PCB","PCO"],        "13":["Republicanos","DC"],
+  "14":["PRD","PP"],         "15":["PRTB","PP"],        "16":["Missão","PP"],
+  "21":["PSTU","PCO"],       "22":["PSOL","PT"],        "23":["DC","Republicanos"],
+  "24":["PP","PL"],          "25":["PL","PP"],          "26":["Missão","PL"],
+  "31":["PCdoB","PT"],       "32":["REDE","PSB"],       "33":["PSB","REDE"],
+  "34":["MDB","União Brasil"],"35":["Missão","Podemos"],"36":["Missão","Podemos"],
+  "41":["PCdoB","PT"],       "42":["PT","PDT"],         "43":["PDT","Solidariedade"],
+  "44":["PSD","PSDB"],       "45":["NOVO","Missão"],    "46":["Missão","NOVO"],
+  "51":["PSTU","PCB"],       "52":["PDT","PT"],         "53":["PSDB","Cidadania"],
+  "54":["NOVO","Missão"],    "55":["NOVO","Missão"],    "56":["NOVO","Missão"],
+  "61":["UP","PCB"],         "62":["PV","REDE"],        "63":["Cidadania","REDE"],
+  "64":["NOVO","Missão"],    "65":["NOVO","Missão"],    "66":["NOVO","Missão"],
+};
+
 /* ═══════ CANDIDATOS CONFERIDOS À MÃO ═══════
    Sobrescrevem o TSE. Servem para partido novo que ainda não entrou direito
    no dataset. Chave: UF (ou BR, que vale em todo o país) → número do partido. */
@@ -451,13 +470,13 @@ const N = {
     { t:"Um contrato social. Quem não concorda pode buscar outro país.", col:4, af:"o imposto é um contrato social, e quem vive aqui aceitou esse contrato." },
     { t:"Um mínimo necessário para garantir ordem e infraestrutura.", col:5, af:"o imposto só se justifica para garantir ordem e infraestrutura." },
     { t:"Extorsão. Cobrança sob ameaça, para a qual nunca dei meu consentimento.", col:6, af:"cobrar imposto sem consentimento é extorsão." }]},
-  q3:{ t:"Tratamento", q:"As pessoas deveriam ser tratadas:", o:[
-    { t:"De forma diferente, baseado no grupo a que pertencem.", go:"q4a", ident:"IDENTITÁRIO", af:"as pessoas devem ser tratadas de forma diferente conforme o grupo a que pertencem." },
-    { t:"De forma igual.", go:"q4l", ident:"UNIVERSALISTA", af:"as pessoas devem ser tratadas de forma igual, sem olhar o grupo." }]},
-  q4a:{ t:"Diferença", q:"Quem age, pensa ou reza de um jeito diferente do que a maioria:", o:[
-    { t:"É considerado um inimigo e deve ser eliminado.", row:1, af:"quem é diferente da maioria é um inimigo e deve ser eliminado." },
-    { t:"Deve ser preso por não fazer bem para o coletivo.", row:2, af:"quem não faz bem ao coletivo deve ser preso." },
-    { t:"Deve ser disciplinado para que melhore.", row:3, af:"quem foge do que a maioria aceita deve ser disciplinado." }]},
+  q3:{ t:"Direitos", q:"Diante das diferenças entre as pessoas:", o:[
+    { t:"Devemos dar direitos de forma diferente, baseado no grupo a que pertencem.", go:"q4a", ident:"IDENTITÁRIO", af:"os direitos devem variar conforme o grupo a que a pessoa pertence." },
+    { t:"Todos devem ter direitos iguais.", go:"q4l", ident:"UNIVERSALISTA", af:"todos devem ter os mesmos direitos, sem olhar o grupo." }]},
+  q4a:{ t:"Dissidência", q:"Quem pensa, reza ou vive de um jeito diferente do coletivo:", o:[
+    { t:"É considerado um inimigo e deve ser eliminado.", row:1, af:"quem vive de um jeito diferente do coletivo é um inimigo e deve ser eliminado." },
+    { t:"Deve ser preso para não atrapalhar o coletivo.", row:2, af:"quem destoa do coletivo deve ser preso." },
+    { t:"Deve ser disciplinado para que melhore.", row:3, af:"quem destoa do coletivo deve ser disciplinado até melhorar." }]},
   q4l:{ t:"Regras", q:"O que as pessoas podem ou não fazer:", o:[
     { t:"Deve ser definido por uma autoridade legisladora.", row:4, af:"os limites da conduta devem ser definidos por uma autoridade legisladora." },
     { t:"Deve respeitar direitos naturais, independente do que diz a lei.", row:5, af:"existem direitos naturais que valem mesmo contra a lei." },
@@ -567,11 +586,14 @@ export default function Colinha2026() {
   const linhas = useMemo(() => {
     if (!res || !uf) return [];
 
-    /* partidos em ordem de proximidade; o indicado sempre primeiro */
-    const perto = [...P]
-      .map((p) => ({ ...p, d: Math.hypot(p.c-res.col, p.r-res.row) - p.peso*.045 }))
+    /* 1º e 2º vêm da tabela publicada; o resto entra só se faltarem candidatos */
+    const par = PARES[`${res.row}${res.col}`] || [];
+    const daTabela = par.map((sg) => P.find((p) => p.s === sg)).filter(Boolean);
+    const resto = [...P]
+      .filter((p) => !par.includes(p.s))
+      .map((p) => ({ ...p, d: Math.hypot(p.c-res.col, p.r-res.row) }))
       .sort((a, b) => a.d - b.d);
-    const ordem = [res.p, ...perto.filter((p) => p.s !== res.p.s)];
+    const ordem = [...daTabela, ...resto];
 
     /* o Senado tem duas vagas: a segunda nunca pode repetir a primeira.
        Se o partido indicado só lançou um nome, a outra vaga vai para o
@@ -589,7 +611,7 @@ export default function Colinha2026() {
           const marca = `${x.partido}-${x.numero}`;
           if (unico && jaUsado.has(marca)) continue;
           if (unico) jaUsado.add(marca);
-          return { ...x, sub: p.s !== res.p.s };
+          return { ...x, sub: p.s !== par[0] };
         }
       }
       return null;
@@ -748,18 +770,35 @@ export default function Colinha2026() {
             <p>Quatro, em árvore. As duas primeiras dão sua coluna no eixo econômico; as duas
               últimas, sua linha no eixo da autoridade. O cruzamento dá uma das 36 casas.</p>
             <h5>2. O enquadramento dos partidos</h5>
-            <table><thead><tr><th>Partido</th><th>Col</th><th>Lin</th><th>Casa</th></tr></thead>
-              <tbody>{[...P].sort((a,b)=>a.c-b.c||a.r-b.r).map((p) => (
-                <tr key={p.s}><td>{p.s} ({p.n})</td><td>{p.c}</td><td>{p.r}</td><td>{GRID[p.r-1][p.c-1]}</td></tr>
+            <p>Cada uma das 30 legendas registradas recebeu uma coordenada fixa na matriz,
+              a partir de programa partidário, comportamento em votações nominais e
+              literatura acadêmica de posicionamento ideológico.</p>
+            <table><thead><tr><th>Partido</th><th>Lin</th><th>Col</th><th>Casa</th></tr></thead>
+              <tbody>{[...P].sort((a,b)=>a.r-b.r||a.c-b.c).map((p) => (
+                <tr key={p.s}><td>{p.s} ({p.n})</td><td>{p.r}</td><td>{p.c}</td><td>{GRID[p.r-1][p.c-1]}</td></tr>
               ))}</tbody></table>
-            <h5>3. A coluna 6 está vazia</h5>
-            <p>Nenhum partido registrado no Brasil defende que imposto seja extorsão.</p>
-            <h5>4. Qual candidato aparece</h5>
+
+            <h5>3. Vinte e três casas não têm partido</h5>
+            <p>Os 30 partidos ocupam 13 das 36 posições. Nenhum ocupa a coluna do mercado
+              absoluto, e as doze casas mais liberais da matriz estão vazias. Quando você cai
+              numa dessas casas, o app avisa em vez de esconder.</p>
+
+            <h5>4. Qual partido aparece em cada casa</h5>
+            <p>Não é cálculo automático de distância: é a <strong>tabela abaixo, definida à
+              mão</strong>. Os critérios, nessa ordem: o partido que ocupa a própria casa,
+              quando existe; proximidade ideológica na matriz; e, nas casas sem partido,
+              preferência por liberdade econômica e individual dentro do quadrante de
+              mercado. A tabela pode ser contestada — está publicada exatamente para isso.</p>
+            <table><thead><tr><th>Casa</th><th>1º</th><th>2º</th></tr></thead>
+              <tbody>{Object.entries(PARES).map(([k, v]) => (
+                <tr key={k}><td>{GRID[k[0]-1][k[1]-1]}</td><td>{v[0]}</td><td>{v[1]}</td></tr>
+              ))}</tbody></table>
+
+            <h5>5. Qual candidato aparece</h5>
             <p>Pelo <strong>melhor número</strong>: o mais redondo dentro do partido indicado.
-              Regra mecânica, não julgamento sobre a pessoa.</p>
-            <h5>5. Quando falta candidato</h5>
-            <p>Identifica com asterisco e indica o mais próximo na matriz. Em caso de
-              empate, favorece liberdade econômica e individual.</p>
+              É regra mecânica, não julgamento sobre a pessoa — e reflete a escolha do próprio
+              partido, que distribui os números. Se o 1º da tabela não lançou candidato para
+              aquele cargo no seu estado, entra o 2º, marcado com asterisco.</p>
             <h5>6. Como a Colinha se sustenta</h5>
             <p>Doações via Pix e comissão de afiliado sobre livros. Não recebemos dinheiro de
               partidos, candidatos ou campanhas, e o resultado não muda em função de quem paga.</p>
@@ -865,12 +904,12 @@ export default function Colinha2026() {
             <div className="autor">
               <span className="tag" style={{ background:"var(--urna-fraca)", color:"var(--urna)" }}>Quem mais concorda com você</span>
               <h6>{res.concorda[0]}</h6><p>{res.concorda[1]}</p>
-              <a href={amazon(res.concorda[0], res.concorda[1])} target="_blank" rel="sponsored nofollow noreferrer">Ver o livro <span>→</span></a>
+              <a href={amazon(res.concorda[0], res.concorda[1])} target="_blank" rel="sponsored nofollow noreferrer">Saber mais <span>→</span></a>
             </div>
             <div className="autor">
               <span className="tag" style={{ background:"#FDE8E2", color:"var(--alerta)" }}>Quem mais discorda de você</span>
               <h6>{res.discorda[0]}</h6><p>{res.discorda[1]} · {res.casaOposta}</p>
-              <a href={amazon(res.discorda[0], res.discorda[1])} target="_blank" rel="sponsored nofollow noreferrer">Ver o livro <span>→</span></a>
+              <a href={amazon(res.discorda[0], res.discorda[1])} target="_blank" rel="sponsored nofollow noreferrer">Saber mais <span>→</span></a>
             </div>
             <p className="afiliado">
               Como Associado da Amazon, eu recebo por compras qualificadas. Se você comprar
@@ -911,7 +950,7 @@ export default function Colinha2026() {
                 {linhas.some((l) => l.sub) &&
                   <>* {res.p.s.toUpperCase()} SEM CANDIDATO NESTE CARGO EM {uf}. INDICAMOS O MAIS PRÓXIMO.<br/></>}
                 COLINHA2026.APP.BR · METODOLOGIA NO SITE<br/>
-                RESPONSÁVEL: LUIGI NUNES LABIGALINI · CONTATO.COLINHA2026@GMAIL.COM
+                CONTATO.COLINHA2026@GMAIL.COM
               </div>
             </div>
 
@@ -941,8 +980,8 @@ export default function Colinha2026() {
             </p>
             <p className="resp">
               Colinha 2026 é uma iniciativa independente. Não recebe recursos de partidos,
-              candidatos, campanhas ou comitês. Responsável pelo conteúdo: Luigi Nunes Labigalini
-              — contato.colinha2026@gmail.com.
+              candidatos, campanhas ou comitês. Responsável pelo conteúdo:
+              contato.colinha2026@gmail.com.
             </p>
           </main>
         )}
