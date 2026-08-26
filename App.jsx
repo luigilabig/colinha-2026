@@ -781,18 +781,14 @@ export default function Colinha2026() {
             <h5>3. Vinte e três casas não têm partido</h5>
             <p>Os 30 partidos ocupam 13 das 36 posições. Nenhum ocupa a coluna do mercado
               absoluto, e as doze casas mais liberais da matriz estão vazias. Quando você cai
-              numa dessas casas, o app avisa em vez de esconder.</p>
+              numa dessas casas, o app avisa. Isso evidencia como o Brasil ainda carece de
+              opções, mesmo tendo tantos partidos.</p>
 
             <h5>4. Qual partido aparece em cada casa</h5>
-            <p>Não é cálculo automático de distância: é a <strong>tabela abaixo, definida à
-              mão</strong>. Os critérios, nessa ordem: o partido que ocupa a própria casa,
-              quando existe; proximidade ideológica na matriz; e, nas casas sem partido,
-              preferência por liberdade econômica e individual dentro do quadrante de
-              mercado. A tabela pode ser contestada — está publicada exatamente para isso.</p>
-            <table><thead><tr><th>Casa</th><th>1º</th><th>2º</th></tr></thead>
-              <tbody>{Object.entries(PARES).map(([k, v]) => (
-                <tr key={k}><td>{GRID[k[0]-1][k[1]-1]}</td><td>{v[0]}</td><td>{v[1]}</td></tr>
-              ))}</tbody></table>
+            <p>A indicação de cada casa foi definida à mão, não por cálculo automático. Os
+              critérios são o partido que ocupa a própria casa, quando existe, e a
+              proximidade ideológica na matriz. A regra completa, casa por casa, pode ser
+              solicitada pelo e-mail de contato.</p>
 
             <h5>5. Qual candidato aparece</h5>
             <p>Pelo <strong>melhor número</strong>: o mais redondo dentro do partido indicado.
